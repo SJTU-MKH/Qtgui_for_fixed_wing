@@ -1,0 +1,16 @@
+nohup: ignoring input
+# Option “-x” is deprecated and might be removed in a later version of gnome-terminal.
+# Use “-- ” to terminate the options and put the command line to execute after it.
+# Option “-x” is deprecated and might be removed in a later version of gnome-terminal.
+# Use “-- ” to terminate the options and put the command line to execute after it.
+# Option “-x” is deprecated and might be removed in a later version of gnome-terminal.
+# Use “-- ” to terminate the options and put the command line to execute after it.
+# Option “-x” is deprecated and might be removed in a later version of gnome-terminal.
+# Use “-- ” to terminate the options and put the command line to execute after it.
+# Option “-x” is deprecated and might be removed in a later version of gnome-terminal.
+# Use “-- ” to terminate the options and put the command line to execute after it.
+OpenCV Error: Assertion failed (scn == 3 || scn == 4) in cvtColor, file /build/opencv-L2vuMj/opencv-3.2.0+dfsg/modules/imgproc/src/color.cpp, line 9716
+[31mTraceback (most recent call last):
+  File "/home/khm/catkin_wa/src/rpg_quadrotor_control/gui/rqt_fix_wing_gui/src/rqt_fix_wing_gui/autopilot_widget.py", line 143, in update_gui
+    frame = cv2.cvtColor(self._video_msg, cv2.COLOR_BGR2RGB)
+cv2.error: /build/opencv-L2vuMj/opencv-3.2.0+dfsg/modules/imgproc/src/color.cpp:9716: error: (-215) scn == 3 || scn == 4 in function cvtColor[0m
