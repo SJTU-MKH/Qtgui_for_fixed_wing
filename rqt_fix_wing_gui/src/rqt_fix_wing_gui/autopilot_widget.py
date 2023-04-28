@@ -72,6 +72,7 @@ class AutopilotWidget(QWidget):
 
     def video_sub_cb(self, msg):
         self.video_flag = True
+        rospy.loginfo(self.video_flag)
         self._video_msg = self._cv_bridge.imgmsg_to_cv2(msg, "bgr8")
         self._video_sub_stamp = rospy.Time.now()
 
@@ -96,7 +97,7 @@ class AutopilotWidget(QWidget):
     
     def connect(self, quad_namespace):
         self._quad_namespace = quad_namespace
-        self.Box_video_src.currentIndexChanged.connect(self.selectionChange)
+        self.Box_video_src.activated.connect(self.selectionChange)
 
         self._send_setpoint_enu_pub = rospy.Publisher('/xtdrone/plane_0/cmd_pose_enu',Pose, queue_size=1)
         self._cmd_pub =rospy.Publisher('/xtdrone/plane_0/cmd',String,queue_size=2)
@@ -116,6 +117,15 @@ class AutopilotWidget(QWidget):
         self.button_go_to_pose.setEnabled(True)
 
         self._connected = True
+
+        # temporary code
+        frame_s = cv2.imread('/home/x/catkin_ws/src/smallwin.jpeg')
+        frame_s = cv2.cvtColor(frame_s, cv2.COLOR_BGR2RGB)
+        height_s, width_s, bytesPerComponent_s = frame_s.shape
+        bytesPerLine_s = bytesPerComponent_s * width_s
+        q_image_s = QImage(frame_s.data,  width_s, height_s, bytesPerLine_s, 
+                        QImage.Format_RGB888).scaled(self.ImageLabel_lidar.width(), self.ImageLabel_lidar.height())
+        self.ImageLabel_lidar.setPixmap(QPixmap.fromImage(q_image_s)) 
 
     def disconnect_pub_sub(self, pub):
         if pub is not None:
@@ -138,6 +148,9 @@ class AutopilotWidget(QWidget):
         self.ImageLabel_lidar
         self._connected = False
 
+    def selectionChange(self):
+        # rospy.loginfo('python video_play.py %s'%(self.Box_video_src.currentText()))
+        os.system('python /home/x/catkin_ws/src/rqt_fix_wing_gui/scripts/video_play.py %s &'%(self.Box_video_src.currentText()))
 
     def update_gui(self):
         # if (self._connected):
@@ -149,13 +162,13 @@ class AutopilotWidget(QWidget):
                             QImage.Format_RGB888).scaled(self.ImageLabel_video.width(), self.ImageLabel_video.height())
             self.ImageLabel_video.setPixmap(QPixmap.fromImage(q_image)) 
             
-            frame_s = cv2.imread('/home/x/catkin_ws/src/smallwin.jpeg')
-            frame_s = cv2.cvtColor(frame_s, cv2.COLOR_BGR2RGB)
-            height_s, width_s, bytesPerComponent_s = frame_s.shape
-            bytesPerLine_s = bytesPerComponent_s * width_s
-            q_image_s = QImage(frame_s.data,  width_s, height_s, bytesPerLine_s, 
-                            QImage.Format_RGB888).scaled(self.ImageLabel_lidar.width(), self.ImageLabel_lidar.height())
-            self.ImageLabel_lidar.setPixmap(QPixmap.fromImage(q_image_s)) 
+            # frame_s = cv2.imread('/home/x/catkin_ws/src/smallwin.jpeg')
+            # frame_s = cv2.cvtColor(frame_s, cv2.COLOR_BGR2RGB)
+            # height_s, width_s, bytesPerComponent_s = frame_s.shape
+            # bytesPerLine_s = bytesPerComponent_s * width_s
+            # q_image_s = QImage(frame_s.data,  width_s, height_s, bytesPerLine_s, 
+            #                 QImage.Format_RGB888).scaled(self.ImageLabel_lidar.width(), self.ImageLabel_lidar.height())
+            # self.ImageLabel_lidar.setPixmap(QPixmap.fromImage(q_image_s)) 
         
         # if (self._connected):
         if (self._connected and self.pose_available() and self.pose_flag):
@@ -241,10 +254,6 @@ class AutopilotWidget(QWidget):
             self._send_setpoint_enu_pub.publish(go_to_pose_msg)
         except:
             rospy.logwarn("Could not read and send go to pose message!")
-
-    def selectionChange(self):
-        # rospy.loginfo('python video_play.py %s'%(self.Box_video_src.currentText()))
-        os.system('python /home/x/catkin_ws/src/rqt_fix_wing_gui/scripts/video_play.py %s'%(self.Box_video_src.currentText()))
         
 
     # def autopilot_feedback_available(self):

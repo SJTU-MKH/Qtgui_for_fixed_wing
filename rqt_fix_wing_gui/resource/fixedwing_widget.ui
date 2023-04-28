@@ -1508,6 +1508,11 @@ QPushButton {
    </property>
    <item>
     <property name="text">
+     <string>请选择源</string>
+    </property>
+   </item>
+   <item>
+    <property name="text">
      <string>demo1</string>
     </property>
    </item>
