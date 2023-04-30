@@ -10,7 +10,7 @@ def pubVideo():
     rospy.init_node('video_pub', anonymous=True)
     img_pub = rospy.Publisher('/airsim_node/drone_1/front_center_custom/Scene', Image, queue_size=10)
     rate = rospy.Rate(10)
-    path = '/home/x/catkin_ws/src/demo/{}.mp4'.format(sys.argv[1])
+    path = '../../demo/{}.mp4'.format(sys.argv[1])
     # rospy.loginfo(address)
 
     cap = cv2.VideoCapture(path)

@@ -119,7 +119,7 @@ class AutopilotWidget(QWidget):
         self._connected = True
 
         # temporary code
-        frame_s = cv2.imread('/home/x/catkin_ws/src/smallwin.jpeg')
+        frame_s = cv2.imread('../../smallwin.jpeg')
         frame_s = cv2.cvtColor(frame_s, cv2.COLOR_BGR2RGB)
         height_s, width_s, bytesPerComponent_s = frame_s.shape
         bytesPerLine_s = bytesPerComponent_s * width_s
@@ -150,7 +150,7 @@ class AutopilotWidget(QWidget):
 
     def selectionChange(self):
         # rospy.loginfo('python video_play.py %s'%(self.Box_video_src.currentText()))
-        os.system('python /home/x/catkin_ws/src/rqt_fix_wing_gui/scripts/video_play.py %s &'%(self.Box_video_src.currentText()))
+        os.system('python video_play.py %s &'%(self.Box_video_src.currentText()))
 
     def update_gui(self):
         # if (self._connected):
