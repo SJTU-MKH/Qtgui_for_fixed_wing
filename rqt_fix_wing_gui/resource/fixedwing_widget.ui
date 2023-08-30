@@ -772,7 +772,7 @@ QPushButton {
    <property name="geometry">
     <rect>
      <x>150</x>
-     <y>280</y>
+     <y>260</y>
      <width>131</width>
      <height>24</height>
     </rect>
@@ -795,7 +795,7 @@ QPushButton {
    <property name="geometry">
     <rect>
      <x>20</x>
-     <y>270</y>
+     <y>250</y>
      <width>101</width>
      <height>41</height>
     </rect>
@@ -1492,6 +1492,52 @@ QPushButton {
    </property>
    <property name="text">
     <string>Take Off</string>
+   </property>
+  </widget>
+  <widget class="QComboBox" name="Box_video_src">
+   <property name="geometry">
+    <rect>
+     <x>150</x>
+     <y>290</y>
+     <width>131</width>
+     <height>24</height>
+    </rect>
+   </property>
+   <property name="editable">
+    <bool>false</bool>
+   </property>
+   <item>
+    <property name="text">
+     <string>请选择源</string>
+    </property>
+   </item>
+   <item>
+    <property name="text">
+     <string>demo1</string>
+    </property>
+   </item>
+   <item>
+    <property name="text">
+     <string>demo2</string>
+    </property>
+   </item>
+   <item>
+    <property name="text">
+     <string>demo3</string>
+    </property>
+   </item>
+  </widget>
+  <widget class="QLabel" name="label_video_select">
+   <property name="geometry">
+    <rect>
+     <x>20</x>
+     <y>280</y>
+     <width>101</width>
+     <height>41</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>Video Source:</string>
    </property>
   </widget>
  </widget>
