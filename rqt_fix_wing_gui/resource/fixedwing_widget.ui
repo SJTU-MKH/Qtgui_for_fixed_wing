@@ -1526,6 +1526,11 @@ QPushButton {
      <string>demo3</string>
     </property>
    </item>
+   <item>
+    <property name="text">
+     <string>demo4</string>
+    </property>
+   </item>
   </widget>
   <widget class="QLabel" name="label_video_select">
    <property name="geometry">

@@ -19,6 +19,7 @@ from geometry_msgs.msg import Pose
 import std_msgs.msg as std_msgs
 from sensor_msgs.msg import Image
 from sensor_msgs.msg import Imu
+from std_msgs.msg import Float32MultiArray
 from cv_bridge import CvBridge
 
 import math
@@ -40,11 +41,14 @@ class AutopilotWidget(QWidget):
         self._send_setpoint_enu_pub = None
         self._cmd_pub =None 
 
-        self._video_sub = None
-        self._video_msg = None
+        self._video_sub_1 = None
+        self._video_sub_2 = None
+        self._video_msg_1 = None
+        self._video_msg_2 = None
         self._video_sub_stamp = rospy.Time.now()
         self._cv_bridge = CvBridge()
-        self.video_flag = False
+        self.video_flag_1 = False
+        self.video_flag_2 = False
 
         self._pose_sub = None
         self._pose_msg = None
@@ -70,10 +74,16 @@ class AutopilotWidget(QWidget):
         self.disconnect()
 
 
-    def video_sub_cb(self, msg):
-        self.video_flag = True
-        rospy.loginfo(self.video_flag)
-        self._video_msg = self._cv_bridge.imgmsg_to_cv2(msg, "bgr8")
+    def video_sub_cb_1(self, msg):
+        self.video_flag_1 = True
+        rospy.loginfo(self.video_flag_1)
+        self._video_msg_1 = self._cv_bridge.imgmsg_to_cv2(msg, "bgr8")
+        self._video_sub_stamp = rospy.Time.now()
+    
+    def video_sub_cb_2(self, msg):
+        self.video_flag_2 = True
+        rospy.loginfo(self.video_flag_2)
+        self._video_msg_2 = self._cv_bridge.imgmsg_to_cv2(msg, "bgr8")
         self._video_sub_stamp = rospy.Time.now()
 
     
@@ -101,9 +111,11 @@ class AutopilotWidget(QWidget):
 
         self._send_setpoint_enu_pub = rospy.Publisher('/xtdrone/plane_0/cmd_pose_enu',Pose, queue_size=1)
         self._cmd_pub =rospy.Publisher('/xtdrone/plane_0/cmd',String,queue_size=2)
-        self._video_sub = rospy.Subscriber('/airsim_node/drone_1/front_center_custom/Scene', Image, self.video_sub_cb, queue_size=10)
+        self._video_sub_1 = rospy.Subscriber('/airsim_node/drone_1/front_center_custom/Scene1', Image, self.video_sub_cb_1, queue_size=10)
+        self._video_sub_2 = rospy.Subscriber('/airsim_node/drone_1/front_center_custom/Scene2', Image, self.video_sub_cb_2, queue_size=10)
         # self._video_sub = None
-        self._pose_sub = rospy.Subscriber('/airsim_node/drone_1/imu/Imu', Imu, self.pose_sub_cb, queue_size=10)
+        # self._pose_sub = rospy.Subscriber('/airsim_node/drone_1/imu/Imu', Imu, self.pose_sub_cb, queue_size=10)
+        self._pose_sub = rospy.Subscriber('/rypd_data', Float32MultiArray, self.pose_sub_cb, queue_size=10)
 
         self.button_launch.setEnabled(True)
         self.button_take_off.setEnabled(True)
@@ -118,14 +130,14 @@ class AutopilotWidget(QWidget):
 
         self._connected = True
 
-        # temporary code
-        frame_s = cv2.imread('../../smallwin.jpeg')
-        frame_s = cv2.cvtColor(frame_s, cv2.COLOR_BGR2RGB)
-        height_s, width_s, bytesPerComponent_s = frame_s.shape
-        bytesPerLine_s = bytesPerComponent_s * width_s
-        q_image_s = QImage(frame_s.data,  width_s, height_s, bytesPerLine_s, 
-                        QImage.Format_RGB888).scaled(self.ImageLabel_lidar.width(), self.ImageLabel_lidar.height())
-        self.ImageLabel_lidar.setPixmap(QPixmap.fromImage(q_image_s)) 
+        # # temporary code
+        # frame_s = cv2.imread('../../smallwin.jpeg')
+        # frame_s = cv2.cvtColor(frame_s, cv2.COLOR_BGR2RGB)
+        # height_s, width_s, bytesPerComponent_s = frame_s.shape
+        # bytesPerLine_s = bytesPerComponent_s * width_s
+        # q_image_s = QImage(frame_s.data,  width_s, height_s, bytesPerLine_s, 
+        #                 QImage.Format_RGB888).scaled(self.ImageLabel_lidar.width(), self.ImageLabel_lidar.height())
+        # self.ImageLabel_lidar.setPixmap(QPixmap.fromImage(q_image_s)) 
 
     def disconnect_pub_sub(self, pub):
         if pub is not None:
@@ -150,17 +162,26 @@ class AutopilotWidget(QWidget):
 
     def selectionChange(self):
         # rospy.loginfo('python video_play.py %s'%(self.Box_video_src.currentText()))
-        os.system('python video_play.py %s &'%(self.Box_video_src.currentText()))
+        os.system('python ../scripts/video_play.py %s &'%(self.Box_video_src.currentText()))
 
     def update_gui(self):
         # if (self._connected):
-        if (self._connected and self.video_available() and self.video_flag):
-            frame = cv2.cvtColor(self._video_msg, cv2.COLOR_BGR2RGB)
-            height, width, bytesPerComponent = frame.shape
-            bytesPerLine = bytesPerComponent * width
-            q_image = QImage(frame.data,  width, height, bytesPerLine, 
+        if (self._connected and self.video_available()): 
+            if  self.video_flag_1:        # the first video window
+                frame_1 = cv2.cvtColor(self._video_msg_1, cv2.COLOR_BGR2RGB)
+                height, width, bytesPerComponent = frame_1.shape
+                bytesPerLine = bytesPerComponent * width
+                q_image = QImage(frame_1.data,  width, height, bytesPerLine, 
                             QImage.Format_RGB888).scaled(self.ImageLabel_video.width(), self.ImageLabel_video.height())
-            self.ImageLabel_video.setPixmap(QPixmap.fromImage(q_image)) 
+                self.ImageLabel_video.setPixmap(QPixmap.fromImage(q_image)) 
+
+            if  self.video_flag_2:        # the seconde video window
+                frame_2 = cv2.cvtColor(self._video_msg_2, cv2.COLOR_BGR2RGB)
+                height, width, bytesPerComponent = frame_2.shape
+                bytesPerLine = bytesPerComponent * width
+                q_image = QImage(frame_2.data,  width, height, bytesPerLine, 
+                            QImage.Format_RGB888).scaled(self.ImageLabel_lidar.width(), self.ImageLabel_lidar.height())
+                self.ImageLabel_lidar.setPixmap(QPixmap.fromImage(q_image)) 
             
             # frame_s = cv2.imread('/home/x/catkin_ws/src/smallwin.jpeg')
             # frame_s = cv2.cvtColor(frame_s, cv2.COLOR_BGR2RGB)
@@ -173,17 +194,18 @@ class AutopilotWidget(QWidget):
         # if (self._connected):
         if (self._connected and self.pose_available() and self.pose_flag):
             # calculate xyzrpy
-            x = self._pose_msg.orientation.x
-            y = self._pose_msg.orientation.y
-            z = self._pose_msg.orientation.z
-            w = self._pose_msg.orientation.w
-            rpy_r = math.atan2(2 * (w * x + y * z), 1 - 2 * (x**2 + y**2))
-            rpy_p = math.asin(2 * (w * y - z * x))
-            rpy_y = math.atan2(2 * (w * z + x * y), 1 - 2 * (y**2 + z**2))
-            self.label_pose_content_1 = 'rpy-r:[r:%(r)+.2f]' % {'r' : rpy_r}
-            self.label_pose_content_2 = 'rpy-p:[p:%(p)+.2f]' % {'p' : rpy_p}
-            self.label_pose_content_3 = 'rpy-y:[y:%(y)+.2f]' % {'y' : rpy_y}
-            self.label_pose_content_4 = 'xyz:[x:%(x)+.2f, y:%(y)+.2f, z:%(z)+.2f]' % {'x' : x, 'y' : y, 'z' : z}
+            # x = self._pose_msg.orientation.x
+            # y = self._pose_msg.orientation.y
+            # z = self._pose_msg.orientation.z
+            # w = self._pose_msg.orientation.w
+            # rpy_r = math.atan2(2 * (w * x + y * z), 1 - 2 * (x**2 + y**2))
+            # rpy_p = math.asin(2 * (w * y - z * x))
+            # rpy_y = math.atan2(2 * (w * z + x * y), 1 - 2 * (y**2 + z**2))
+            self.label_pose_content_1 = 'ryp-roll: %(r)+.3f' % {'r' : self._pose_msg.data[0]}
+            self.label_pose_content_2 = 'ryp-yaw : %(y)+.3f' % {'y' : self._pose_msg.data[1]}
+            self.label_pose_content_3 = 'ryp-pitch:%(p)+.3f' % {'p' : self._pose_msg.data[2]}
+            self.label_pose_content_4 = 'distance: %(d)+.3f' % {'d' : self._pose_msg.data[3]}
+            # self.label_pose_content_4 = 'xyz:[x:%(x)+.2f, y:%(y)+.2f, z:%(z)+.2f]' % {'x' : x, 'y' : y, 'z' : z}
             # self.label_pose_content_1 = self.label_pose_content_2
             # self.label_pose_content_2 = self.label_pose_content_3
             # self.label_pose_content_3 = self.label_pose_content_4
