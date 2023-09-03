@@ -2,6 +2,7 @@
 import os
 import rospy
 import rospkg
+import subprocess
 
 from python_qt_binding import loadUi
 try:
@@ -37,6 +38,8 @@ class AutopilotWidget(QWidget):
         self._quad_namespace = None
         self._connected = False
 
+        # subprocess
+        self.subproc = None
 
         self._send_setpoint_enu_pub = None
         self._cmd_pub =None 
@@ -162,7 +165,12 @@ class AutopilotWidget(QWidget):
 
     def selectionChange(self):
         # rospy.loginfo('python video_play.py %s'%(self.Box_video_src.currentText()))
-        os.system('python ../scripts/video_play.py %s &'%(self.Box_video_src.currentText()))
+        # dir = 'python ../scripts/video_play.py %s'%(self.Box_video_src.currentText())
+        # rospy.loginfo(dir)
+        if self.subproc is not None:
+            self.subproc.kill()
+        self.subproc = subprocess.Popen(['python', '../scripts/video_play.py', self.Box_video_src.currentText()])
+        # os.system('python ../scripts/video_play.py %s &'%(self.Box_video_src.currentText()))
 
     def update_gui(self):
         # if (self._connected):
@@ -176,12 +184,25 @@ class AutopilotWidget(QWidget):
                 self.ImageLabel_video.setPixmap(QPixmap.fromImage(q_image)) 
 
             if  self.video_flag_2:        # the seconde video window
-                frame_2 = cv2.cvtColor(self._video_msg_2, cv2.COLOR_BGR2RGB)
-                height, width, bytesPerComponent = frame_2.shape
-                bytesPerLine = bytesPerComponent * width
-                q_image = QImage(frame_2.data,  width, height, bytesPerLine, 
-                            QImage.Format_RGB888).scaled(self.ImageLabel_lidar.width(), self.ImageLabel_lidar.height())
-                self.ImageLabel_lidar.setPixmap(QPixmap.fromImage(q_image)) 
+                # to prevent window2 show when it shouldnt show
+                if self.Box_video_src.currentText() == 'demo3':
+                    frame_2 = cv2.cvtColor(self._video_msg_2, cv2.COLOR_BGR2RGB)
+                    height, width, bytesPerComponent = frame_2.shape
+                    bytesPerLine = bytesPerComponent * width
+                    q_image = QImage(frame_2.data,  width, height, bytesPerLine, 
+                                QImage.Format_RGB888).scaled(self.ImageLabel_lidar.width(), self.ImageLabel_lidar.height())
+                    self.ImageLabel_lidar.setPixmap(QPixmap.fromImage(q_image))
+                else:
+                    black = np.zeros((512, 512, 3), np.uint8)
+                    black.fill(0)
+                    # frame_black = cv2.cvtColor(self._video_msg_2, cv2.COLOR_BGR2RGB)
+                    height, width, bytesPerComponent = black.shape
+                    bytesPerLine = bytesPerComponent * width
+                    q_image = QImage(black.data,  width, height, bytesPerLine, 
+                                QImage.Format_RGB888).scaled(self.ImageLabel_lidar.width(), self.ImageLabel_lidar.height())
+                    self.ImageLabel_lidar.setPixmap(QPixmap.fromImage(q_image))
+
+
             
             # frame_s = cv2.imread('/home/x/catkin_ws/src/smallwin.jpeg')
             # frame_s = cv2.cvtColor(frame_s, cv2.COLOR_BGR2RGB)
@@ -201,15 +222,21 @@ class AutopilotWidget(QWidget):
             # rpy_r = math.atan2(2 * (w * x + y * z), 1 - 2 * (x**2 + y**2))
             # rpy_p = math.asin(2 * (w * y - z * x))
             # rpy_y = math.atan2(2 * (w * z + x * y), 1 - 2 * (y**2 + z**2))
-            self.label_pose_content_1 = 'ryp-roll: %(r)+.3f' % {'r' : self._pose_msg.data[0]}
-            self.label_pose_content_2 = 'ryp-yaw : %(y)+.3f' % {'y' : self._pose_msg.data[1]}
-            self.label_pose_content_3 = 'ryp-pitch:%(p)+.3f' % {'p' : self._pose_msg.data[2]}
-            self.label_pose_content_4 = 'distance: %(d)+.3f' % {'d' : self._pose_msg.data[3]}
+            # self.label_pose_content_1 = 'ryp-roll: %(r)+.3f' % {'r' : self._pose_msg.data[0]}
+            # self.label_pose_content_2 = 'ryp-yaw : %(y)+.3f' % {'y' : self._pose_msg.data[1]}
+            # self.label_pose_content_3 = 'ryp-pitch:%(p)+.3f' % {'p' : self._pose_msg.data[2]}
+            # self.label_pose_content_4 = 'distance: %(d)+.3f' % {'d' : self._pose_msg.data[3]}
             # self.label_pose_content_4 = 'xyz:[x:%(x)+.2f, y:%(y)+.2f, z:%(z)+.2f]' % {'x' : x, 'y' : y, 'z' : z}
+
+            self.label_pose_content_1 = '              roll       yaw      pitch     distance'
             # self.label_pose_content_1 = self.label_pose_content_2
-            # self.label_pose_content_2 = self.label_pose_content_3
-            # self.label_pose_content_3 = self.label_pose_content_4
-            # self.label_pose_content_4 = 'Pose(ryp):[%(x)+.2f, y:%(y)+.2f, z:%(z)+.2f]' % {'x' : self._pose_msg.orientation.x, 'y' : self._pose_msg.y, 'z' : self._pose_msg.z}
+            self.label_pose_content_2 = self.label_pose_content_3
+            self.label_pose_content_3 = self.label_pose_content_4
+            self.label_pose_content_4 = 'Pose:[%(r)+.2f, %(y)+.2f, %(p)+.2f, %(d)+.2f]' % {
+                'r':self._pose_msg.data[0], 'y':self._pose_msg.data[1], 'p':self._pose_msg.data[2], 'd':self._pose_msg.data[3]}
+            # self.label_pose_content_4 = 'Pose(rypd):[r:%(r)+.2f, y:%(y)+.2f, p:%(p)+.2f, d:%(d)+.2f]' % {
+            #         'r':self._pose_msg.data[0], 'y':self._pose_msg.data[1], 'p':self._pose_msg.data[2], 'd':self._pose_msg.data[3]}
+            
             self.label_pose_1.setText(self.label_pose_content_1)      
             self.label_pose_2.setText(self.label_pose_content_2)    
             self.label_pose_3.setText(self.label_pose_content_3)    
